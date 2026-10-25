@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Music Player EQ</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101116;color:white;font-family:Arial;padding:20px}
+main{max-width:450px;margin:auto}
+h2{text-align:center}
+button,label{background:#242632;color:white;border:0;padding:12px;border-radius:9px;cursor:pointer}
+#pick{display:block;text-align:center;margin-bottom:18px}
+input[type=file]{display:none}
+audio{width:100%;margin:10px 0}
+.eq{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:25px}
+.band{text-align:center;font-size:12px}
+.band input{width:115px;transform:rotate(-90deg);margin:52px 0}
+.value{color:#00e5ff;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<h2> MUSIC PLAYER </h2>
+<label id="pick" for="file">PILIH LAGU</label>
+<input id="file" type="file" accept="audio/*">
+<audio id="player" controls></audio>
+
+<h3>Equalizer</h3>
+<div class="eq" id="eq"></div>
+</main>
+<script>
+const player=document.getElementById('player');
+const file=document.getElementById('file');
+const eq=document.getElementById('eq');
+const freqs=[40,230,910,6000,14000];
+const labels=['40 Hz','230 Hz','910 Hz','6 kHz','14 kHz'];
+let ctx,source,filters=[];
+
+freqs.forEach((freq,i)=>{
+  eq.insertAdjacentHTML('beforeend',`
+    <div class="band">
+      <div>${labels[i]}</div>
+      <input id="s${i}" type="range" min="-12" max="12" value="0" step="1">
+      <div class="value" id="v${i}">0 dB</div>
+    </div>`);
+});
+
+function setupAudio(){
+  if(ctx)return;
+  ctx=new (window.AudioContext||window.webkitAudioContext)();
+  source=ctx.createMediaElementSource(player);
+  let previous=source;
+  freqs.forEach((freq,i)=>{
+    const f=ctx.createBiquadFilter();
+    f.type='peaking';
+    f.frequency.value=freq;
+    f.Q.value=1;
+    filters.push(f);
+    previous.connect(f);
+    previous=f;
+  });
+  previous.connect(ctx.destination);
+}
+file.addEventListener('change',()=>{
+  if(!file.files.length)return;
+  player.src=URL.createObjectURL(file.files[0]);
+  player.load();
+  setupAudio();
+  ctx.resume();
+  player.play().catch(()=>{});
+});
+freqs.forEach((_,i)=>{
+  document.getElementById('s'+i).addEventListener('input',e=>{
+    const val=Number(e.target.value);
+    document.getElementById('v'+i).textContent=val+' dB';
+    if(filters[i])filters[i].gain.value=val;
+  });
+});
+player.addEventListener('play',()=>{
+  if(ctx)ctx.resume();
+});
+</script>
+</body>
+</html>

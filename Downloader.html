@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Install App</title>
+<style>
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#101116;font-family:Arial}
+a{background:#00e5ff;color:#101116;padding:18px 45px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:20px}
+</style>
+</head>
+<body>
+<a id="install" href="MusiccPlayer.apk" download>INSTALL</a>
+<script>
+const namaAPK="MusiccPlayer.apk";
+document.getElementById('install').href=namaAPK;
+document.getElementById('install').download=namaAPK;
+</script>
+</body>
+</html>
